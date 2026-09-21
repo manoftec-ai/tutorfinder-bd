@@ -4,65 +4,42 @@
     "name": "TutorFinder BD",
     "memorySystemVersion": "1.0",
     "lastUpdated": "2026-09-21",
-    "sessionsCount": 1,
+    "sessionsCount": 2,
     "repo": "manoftec-ai/tutorfinder-bd",
-    "hosting": "Vercel Hobby",
-    "stack": "Astro 7 + Tailwind 4 + MDX (static, builds on Vercel)"
+    "hosting": "Vercel Hobby (project 'tutor-finder', GitHub auto-deploy on main)",
+    "stack": "Astro 5 SSR + Tailwind 4 + MDX + Supabase (free, NOT yet provisioned)"
   },
   "purpose": "FREE DocTime-style review directory for Bangladesh tutoring, Dhaka-first: tutors enlist free (profiles by subject/level/area/mode/fee), students/guardians search & filter to find their perfect match, real user reviews gated by actual engagement, admin verification/moderation. SEO = acquisition channel. Monetization later & optional (featured/verified/match-service) — directory stays free.",
   "blueprint": {
     "file": "docs/BLUEPRINT.md",
     "version": "2.0",
     "date": "2026-09-21",
-    "model": "DocTime-style: free verified reviewable directory (doctors -> tutors)",
-    "authoredBecause": "user: build something like DocTime where users give reviews, complete free directory, easy for teachers to enlist, students find perfect match by location/subject; make a real architecture and blueprint first"
+    "model": "DocTime-style: free verified reviewable directory (doctors -> tutors)"
   },
   "verdict": {
-    "summary": "CONDITIONAL GO. The demand side is excellent (92% tutoring prevalence, ~38-40M students, <1% served by leader); the trust gap in the informal 'tuition media' layer is the real opportunity. Generic Caretutors clone = NO-GO (13-yr dominant leader). Win via underserved niches + SEO at zero budget.",
+    "summary": "CONDITIONAL GO. Demand-side excellent (92% tutoring prevalence, ~38-40M students, <1% served by leader); trust gap in informal 'tuition media' is the opportunity. Generic Caretutors clone = NO-GO.",
     "evidenceFile": "docs/RESEARCH.md"
   },
   "goals": {
     "active": [
-      { "id": "G2", "goal": "Build TutorFinder BD site (SEO content + directory first)", "priority": "high", "status": "active" },
-      { "id": "G3", "goal": "Monetize later (featured listings / lead-gen / then commission matching)", "priority": "medium", "status": "active" }
+      { "id": "G2", "goal": "Build TutorFinder BD (DocTime-style FREE review directory)", "priority": "high", "status": "active", "notes": "MVP code built + deployed shell; needs Supabase provisioning + seed to go live" },
+      { "id": "G3", "goal": "Monetize later (featured/verified/match-service — directory stays free)", "priority": "medium", "status": "active" }
     ],
     "completed": [
-      { "id": "G1", "goal": "Validate the BD/Dhaka tutor-finder opportunity", "date": "2026-09-21" }
+      { "id": "G1", "goal": "Validate the BD/Dhaka tutor-finder opportunity", "date": "2026-09-21" },
+      { "id": "G4", "goal": "Study DocTime model + write real architecture/blueprint (v2)", "date": "2026-09-21" },
+      { "id": "G5", "goal": "Build full MVP codebase (schema + SSR app + endpoints) & deploy shell to Vercel", "date": "2026-09-21" }
     ]
   },
   "decisions": [
-    {
-      "date": "2026-09-21",
-      "decision": "Stack = Astro SSR on Vercel + Supabase free (Postgres/Auth/Storage/RLS)",
-      "rationale": "User picked recommended A/B; zero ops, portable Postgres schema"
-    },
-    {
-      "date": "2026-09-21",
-      "decision": "MVP scope = FULL: tutor enlist+profile+admin approve+public search directory+contact flow+engagement-gated reviews",
-      "rationale": "User picked recommended A/B; trust loop from day one"
-    },
-    {
-      "date": "2026-09-21",
-      "decision": "PIVOT (v2): DocTime-style FREE review directory — tutors enlist free; search by area/subject/level; engagement-gated user reviews; admin verify/moderation; free directory permanent, SEO = acquisition channel",
-      "rationale": "User wants DocTime model for tutors (reviews + free directory + easy enlistment + perfect-match search); blueprint-first request; docs/BLUEPRINT.md authoritative",
-      "supersedes": "v1 SEO-content-first-as-product"
-    },
-    {
-      "date": "2026-09-21",
-      "decision": "Niche wedge = SEO content + directory FIRST (not a Caretutors clone)",
-      "rationale": "Market excellent but cannot out-scale Caretutors; win via underserved niches + organic search at zero budget",
-      "chosenIn": "user question, 2026-09-21"
-    },
-    {
-      "date": "2026-09-21",
-      "decision": "Stack = Astro 7 + Tailwind 4 + MDX on Vercel Hobby, mirroring newsdesk-bd conventions",
-      "rationale": "Proven free stack; local Termux build impossible; Vercel builds"
-    },
-    {
-      "date": "2026-09-21",
-      "decision": "Working brand 'TutorFinder BD'; repo manoftec-ai/tutorfinder-bd",
-      "rationale": "User's own framing 'Tutor Finder'; name/domain adjustable"
-    }
+    { "date": "2026-09-21", "decision": "Stack = Astro SSR on Vercel + Supabase free (Postgres/Auth/Storage/RLS)", "rationale": "User picked recommended A/B; zero ops" },
+    { "date": "2026-09-21", "decision": "MVP scope = FULL: enlist+profile+admin approve+public search+contact flow+gated reviews", "rationale": "User picked recommended A/B; trust loop day one" },
+    { "date": "2026-09-21", "decision": "PIVOT (v2): DocTime-style FREE review directory", "rationale": "User request; blueprint-first; docs/BLUEPRINT.md authoritative", "supersedes": "v1 SEO-content-first-as-product" },
+    { "date": "2026-09-21", "decision": "Astro PINNED to v5 + @astrojs/vercel 8 + vite 6", "rationale": "Astro 7 rolldown has no Android support; v5/esbuild has Android binaries (keeps local dev possible); identical on Vercel" },
+    { "date": "2026-09-21", "decision": "Supabase cookie adapter uses get/set/remove (not getAll)", "rationale": "Astro 5 cookies lack getAll (Astro 6+); @supabase/ssr supports deprecated interface" },
+    { "date": "2026-09-21", "decision": "profiles_public view WITHOUT security_invoker", "rationale": "View must bypass RLS (owner privs) for public names + admin role check; profiles table stays select-denied" },
+    { "date": "2026-09-21", "decision": "Vercel project 'tutor-finder' + GitHub auto-deploy on main", "rationale": "Push deploys; production alias tutor-finder-six.vercel.app" },
+    { "date": "2026-09-21", "decision": "Working brand 'TutorFinder BD'; repo manoftec-ai/tutorfinder-bd (public)", "rationale": "Created via GitHub API" }
   ],
   "preferencesAndConstraints": {
     "budget": "ZERO/VERY LOW; free tools only",
@@ -71,16 +48,26 @@
     "gitRule": "commit + push after any modification (global standing rule 5.6)",
     "language": "English to user in Termux (D46); Bengali OK in published content"
   },
+  "projectContext": {
+    "codeLayout": "Code at repo root (NOT site/): src/, supabase/migrations/ (0001_schema.sql verified, 0002_seed.sql), public/, docs/, memory/",
+    "pages": "home, search, tutor/[slug], areas/*, subjects/*, how-it-works, privacy, terms, join, login, guardian/dashboard, tutor/dashboard, tutor/edit, admin/dashboard",
+    "endpoints": "POST api/auth/{signup,login,logout}, api/tutor/save-profile(+photo), api/guardian/{request,cancel}, api/tutor/engagement-status, api/reviews/{create,reply}, api/admin/{decide-tutor,moderate-review}",
+    "environmentQuirks": "Android external storage CANNOT dlopen native addons (rollup/esbuild/oxide) -> NO local build/dev; builds only via Vercel. npm bin-links=false global. git safe.directory exception added. committer email manoftec-ai@users.noreply.github.com"
+  },
   "workInProgress": {
-    "scaffolded": "2026-09-21: AGENTS.md, memory/, docs/RESEARCH.md, docs/PRODUCT_PLAN.md, docs/BLUEPRINT.md (v2 authoritative), initial Astro skeleton only",
-    "blueprintOpenQuestions": "see BLUEPRINT.md 15 (stack, auth, MVP scope, brand/domain, seed policy)"
+    "status": "MVP code fully written, plain-TS typechecked clean, deployed to Vercel (Build Completed, status Ready). Runtime UNVERIFIED: Supabase not provisioned; Vercel Deploy Protection (SSO) redirects public *.vercel.app traffic to SSO login (team setting).",
+    "verifiedDeployUrl": "https://tutor-finder-oavfd0okj-man-of-technology.vercel.app (latest; project prod alias tutor-finder-six.vercel.app)"
   },
   "nextSteps": [
-    "Confirm BLUEPRINT 15 open questions (stack, auth, MVP scope, brand/domain, seed policy)",
-    "M0: Supabase project + migrations + auth skeleton + repo cleanup",
-    "M1: tutor registration + profile + admin approve + public directory search/filter + profile pages; seed 20-50 tutors manually",
-    "M2: guardian contact-request flow + engagement + gated reviews + moderation",
-    "Domain: tutorfinderbd.com / dhakatutor.com"
+    "USER: create free Supabase account+project; provide URL/anon/service-role keys (+DB password) -> apply migrations -> set Vercel envs (PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)",
+    "DECIDE: Vercel Deploy Protection (SSO) off for production OR custom domain (currently 302 to SSO)",
+    "After Supabase live: e2e verify register->tutor edit->admin approve->search->guardian request->tutor respond->review->moderation; set first admin role",
+    "Seed 20-50 real tutors (founder-driven onboarding)",
+    "Domain: tutorfinderbd.com / dhakatutor.com; set SITE_URL env",
+    "Ambient SEO later: sitemap, MDX blog, JSON-LD per area/subject"
   ],
-  "archived": []
+  "archived": [
+    { "item": "PRODUCT_PLAN as primary plan", "replacedBy": "BLUEPRINT v2 authoritative" },
+    { "item": "Astro 7 / @astrojs/vercel 11", "replacedBy": "Astro 5 / @astrojs/vercel 8 (Android-compatible)" }
+  ]
 }
