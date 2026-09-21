@@ -1,0 +1,115 @@
+---
+import Base from "../layouts/Base.astro";
+import SearchForm from "../components/SearchForm.astro";
+import TutorCard from "../components/TutorCard.astro";
+import Pagination from "../components/Pagination.astro";
+import { supabaseFromCookies } from "../lib/supabase";
+import { hasSupabase } from "../lib/env";
+import { listTutors, requireProfile, type Area, type Level, type Subject, type TutorWithRelations } from "../lib/db";
+
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb);
+
+const params = Astro.url.searchParams;
+const filters = {
+  q: (params.get("q") ?? "").trim(),
+  area: params.get("area") ?? "",
+  subject: params.get("subject") ?? "",
+  level: params.get("level") ?? "",
+  mode: params.get("mode") ?? "",
+  minRating: params.get("minRating") ?? "",
+  page: Math.max(1, parseInt(params.get("page") ?? "1", 10) || 1),
+};
+
+const activeFilterCount = [filters.q, filters.area, filters.subject, filters.level, filters.mode, filters.minRating]
+  .filter(Boolean).length;
+
+let areas: Area[] = [];
+let subjects: Subject[] = [];
+let levels: Level[] = [];
+let tutors: TutorWithRelations[] = [];
+let count = 0;
+
+if (hasSupabase) {
+  const [a, s, l, res] = await Promise.all([
+    sb.from("areas").select("id, slug, name").order("name"),
+    sb.from("subjects").select("id, slug, name").order("name"),
+    sb.from("levels").select("id, code, label").order("id"),
+    listTutors(sb, {
+      q: filters.q || undefined,
+      area: filters.area || undefined,
+      subject: filters.subject || undefined,
+      level: filters.level || undefined,
+      mode: filters.mode || undefined,
+      minRating: filters.minRating ? parseFloat(filters.minRating) : undefined,
+      page: filters.page,
+      perPage: 12,
+    }),
+  ]);
+  areas = (a.data as Area[]) ?? [];
+  subjects = (s.data as Subject[]) ?? [];
+  levels = (l.data as Level[]) ?? [];
+  tutors = res.tutors;
+  count = res.count;
+}
+
+const perPage = 12;
+const totalPages = Math.max(1, Math.ceil(count / perPage));
+---
+
+<Base
+  title="Find tutors in Bangladesh — search by area, subject and class | TutorFinder BD"
+  description="Search verified home and online tutors in Dhaka by area, subject, class, teaching mode and rating. Free, no commission."
+  profile={profile}
+>
+  <section class="container-page py-10">
+    <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Find a tutor</h1>
+    <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <SearchForm
+        areas={areas}
+        subjects={subjects}
+        levels={levels}
+        values={{
+          q: filters.q,
+          area: filters.area,
+          subject: filters.subject,
+          level: filters.level,
+          mode: filters.mode,
+          minRating: filters.minRating,
+        }}
+      />
+    </div>
+
+    <p class="mt-8 text-sm text-slate-500">
+      {hasSupabase
+        ? count > 0
+          ? `${count.toLocaleString("en-BD")} tutor${count === 1 ? "" : "s"} matched`
+          : "No tutors matched"
+        : ""}
+      {activeFilterCount > 0 && (
+        <a href="/search/" class="ml-3 text-emerald-700 hover:underline">Clear filters ({activeFilterCount})</a>
+      )}
+    </p>
+
+    {hasSupabase && tutors.length > 0 ? (
+      <>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {tutors.map((t) => <TutorCard tutor={t} />)}
+        </div>
+        <Pagination page={filters.page} totalPages={totalPages} url={Astro.url} />
+      </>
+    ) : hasSupabase ? (
+      <div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+        <p class="text-lg font-semibold text-slate-700">No tutors match those filters yet</p>
+        <p class="mt-2 text-sm">Try removing a filter, or{" "}
+          <a href="/join/" class="text-emerald-700 hover:underline">tell a tutor friend to join free</a>.
+        </p>
+      </div>
+    ) : (
+      <div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+        <p class="text-lg font-semibold text-slate-700">Directory going live soon</p>
+        <p class="mt-2 text-sm">The tutor directory is being provisioned. Check back shortly.</p>
+      </div>
+    )}
+  </section>
+</Base>

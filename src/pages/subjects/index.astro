@@ -1,0 +1,76 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { hasSupabase } from "../../lib/env";
+import { requireProfile, type Subject } from "../../lib/db";
+
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb);
+
+let subjects: Subject[] = [];
+const counts: Record<number, number> = {};
+const CATEGORY_LABELS: Record<string, string> = {
+  academic: "School & college subjects",
+  admission: "Admission preparation",
+  testprep: "Tests & language (IELTS, GRE…)",
+  madrasa: "Madrasa studies",
+  language: "Language & Quran",
+  skills: "Skills & hobbies",
+};
+
+if (hasSupabase) {
+  const [s, l] = await Promise.all([
+    sb.from("subjects").select("id, slug, name, bengali_name, category").order("name"),
+    sb.from("tutor_subjects").select("subject_id"),
+  ]);
+  subjects = (s.data as Subject[]) ?? [];
+  (l.data ?? []).forEach((r) => {
+    counts[r.subject_id] = (counts[r.subject_id] ?? 0) + 1;
+  });
+}
+
+const grouped: Array<{ label: string; items: Subject[] }> = [];
+for (const [key, label] of Object.entries(CATEGORY_LABELS)) {
+  const items = subjects.filter((s) => s.category === key);
+  if (items.length) grouped.push({ label, items });
+}
+---
+
+<Base
+  title="Browse tutors by subject | TutorFinder BD"
+  description="Find tutors for every subject — Mathematics, Physics, English, ICT, IELTS, admission prep, Quran and more."
+  profile={profile}
+>
+  <section class="container-page py-10">
+    <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Tutors by subject</h1>
+    <p class="mt-2 max-w-2xl text-sm text-slate-500">
+      From SSC and HSC to IELTS, admission tests and skills — find a tutor for any subject.
+    </p>
+    <div class="mt-8 space-y-8">
+      {grouped.map((g) => (
+        <div>
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-400">{g.label}</h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {g.items.map((s) => (
+              <a
+                href={`/subjects/${s.slug}/`}
+                class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-300"
+              >
+                <div>
+                  <span class="text-sm font-medium text-slate-800">{s.name}</span>
+                  {s.bengali_name && <span class="ml-2 text-xs text-slate-400">{s.bengali_name}</span>}
+                </div>
+                <span class="text-xs text-slate-400">{counts[s.id] ?? 0} tutor{(counts[s.id] ?? 0) === 1 ? "" : "s"}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+    {subjects.length === 0 && (
+      <div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+        Subject listing loading soon.
+      </div>
+    )}
+  </section>
+</Base>

@@ -1,0 +1,58 @@
+---
+import Base from "../../layouts/Base.astro";
+import TutorCard from "../../components/TutorCard.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { hasSupabase } from "../../lib/env";
+import { listTutors, requireProfile, type Area, type TutorWithRelations } from "../../lib/db";
+
+const { area } = Astro.params;
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb);
+
+let areaObj: Area | null = null;
+let tutors: TutorWithRelations[] = [];
+
+if (hasSupabase && area) {
+  const [a, res] = await Promise.all([
+    sb.from("areas").select("id, slug, name, bengali_name, thana").eq("slug", String(area)).maybeSingle(),
+    listTutors(sb, { area: String(area), perPage: 24 }),
+  ]);
+  areaObj = (a.data as Area | null) ?? null;
+  tutors = res.tutors;
+}
+
+if (!areaObj) {
+  Astro.response.status = 404;
+}
+---
+
+<Base
+  title={areaObj ? `Tutors in ${areaObj.name} — home & online | TutorFinder BD` : "Area not found | TutorFinder BD"}
+  description={areaObj ? `Browse and compare ${areaObj.name} tutors by subject, class and rating. Free, no commission.` : ""}
+  profile={profile}
+>
+  <section class="container-page py-10">
+    {!areaObj ? (
+      <p class="text-center text-slate-500">Area not found. <a href="/areas/" class="text-emerald-700 hover:underline">Browse all areas</a></p>
+    ) : (
+      <>
+        <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">Tutors in {areaObj.name}</h1>
+        <p class="mt-2 text-sm text-slate-500">
+          {areaObj.thana ? `${areaObj.thana} Thana, Dhaka` : "Dhaka"}
+          {areaObj.bengali_name && ` · ${areaObj.bengali_name}`} —{" "}
+          <a href={`/search/?area=${areaObj.slug}`} class="text-emerald-700 hover:underline">refine by subject & class</a>
+        </p>
+        {tutors.length > 0 ? (
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tutors.map((t) => <TutorCard tutor={t} />)}
+          </div>
+        ) : (
+          <div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+            No active tutors in {areaObj.name} yet.{" "}
+            <a href="/join/" class="text-emerald-700 hover:underline">Tutor? List here free.</a>
+          </div>
+        )}
+      </>
+    )}
+  </section>
+</Base>

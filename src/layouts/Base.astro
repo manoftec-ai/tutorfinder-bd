@@ -1,0 +1,54 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import "../styles.css";
+import type { Profile } from "../lib/db";
+
+interface Props {
+  title: string;
+  description: string;
+  /** extra JSON-LD block(s), pass as string */
+  jsonLd?: string;
+  profile?: Profile | null;
+}
+
+const { title, description, jsonLd, profile = null } = Astro.props;
+const site = Astro.site?.toString() ?? "https://tutorfinder-bd.vercel.app";
+const url = new URL(Astro.url.pathname, site).toString();
+---
+
+<!doctype html>
+<html lang="en-BD">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TutorFinder BD" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta name="theme-color" content="#047857" />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "TutorFinder BD",
+      url: site,
+      inLanguage: "en-BD",
+      description: "Find verified, trusted home and online tutors in Bangladesh — Dhaka-first.",
+    })} />
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <Header profile={profile} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,31 @@
+---
+interface Props {
+  page: number;
+  totalPages: number;
+  url: URL;
+  perPage?: number;
+}
+const { page, totalPages, url } = Astro.props;
+
+function pageUrl(p: number): string {
+  const u = new URL(url);
+  u.searchParams.set("page", String(p));
+  return u.pathname + u.search;
+}
+---
+
+{totalPages > 1 && (
+  <nav class="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
+    {page > 1 && (
+      <a href={pageUrl(page - 1)} class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:border-emerald-300">
+        ← Prev
+      </a>
+    )}
+    <span class="px-2 text-sm text-slate-500">Page {page} of {totalPages}</span>
+    {page < totalPages && (
+      <a href={pageUrl(page + 1)} class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:border-emerald-300">
+        Next →
+      </a>
+    )}
+  </nav>
+)}

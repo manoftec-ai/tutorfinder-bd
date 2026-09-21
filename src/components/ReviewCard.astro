@@ -1,0 +1,29 @@
+---
+import type { ReviewRow } from "../lib/db";
+import { formatDate } from "../lib/directory";
+import Stars from "./Stars.astro";
+
+interface Props {
+  review: ReviewRow;
+}
+const { review } = Astro.props;
+---
+
+<article class="rounded-2xl border border-slate-200 bg-white p-4">
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">V</span>
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold text-emerald-700">Verified guardian</span>
+        <span class="text-xs">{formatDate(review.created_at)}</span>
+      </div>
+    </div>
+    <Stars rating={review.rating_overall} />
+  </div>
+  {review.comment && <p class="mt-3 text-sm text-slate-700">{review.comment}</p>}
+  {review.tutor_reply && (
+    <div class="mt-3 rounded-lg bg-emerald-50 p-3 text-sm text-slate-700">
+      <span class="font-semibold text-emerald-800">Tutor's reply:</span> {review.tutor_reply}
+    </div>
+  )}
+</article>

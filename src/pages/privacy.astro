@@ -1,0 +1,27 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { requireProfile } from "../../lib/db";
+
+const profile = await requireProfile(supabaseFromCookies(Astro.cookies));
+---
+
+<Base
+  title="Privacy Policy — TutorFinder BD"
+  description="How TutorFinder BD handles your data. We never sell your information."
+  profile={profile}
+>
+  <section class="container-page py-12">
+    <h1 class="text-3xl font-bold text-slate-900">Privacy Policy</h1>
+    <div class="prose mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600">
+      <p><strong>Short version:</strong> we never sell your data and we never expose your contact details without your control.</p>
+      <p><strong>What we collect.</strong> Account details (name, email), profile information you choose to publish (institution, qualification, bio, fees, photo), and engagement records (who requested tutoring from whom, which subjects and areas).</p>
+      <p><strong>What is public.</strong> Tutor profiles are public. Guardian identities on reviews are shown only as "Verified guardian". Contact sharing happens only when both sides agree on the platform.</p>
+      <p><strong>How we use it.</strong> To operate the directory, prevent fraud (fake profiles, fake reviews), and moderate content.</p>
+      <p><strong>Storage.</strong> Data is hosted by our hosting providers (Supabase, Vercel) with standard security. Passwords are never stored by us — authentication is handled by our auth provider.</p>
+      <p><strong>Deletion.</strong> You can request account deletion anytime; your public profile is removed.</p>
+      <p><strong>Changes.</strong> We may update this policy; material changes will be announced on this page.</p>
+      <p class="text-xs text-slate-400">Last updated: 21 September 2026.</p>
+    </div>
+  </section>
+</Base>

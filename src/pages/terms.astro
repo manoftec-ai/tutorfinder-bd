@@ -1,0 +1,27 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { requireProfile } from "../../lib/db";
+
+const profile = await requireProfile(supabaseFromCookies(Astro.cookies));
+---
+
+<Base
+  title="Terms of Service — TutorFinder BD"
+  description="Terms of use for tutors and guardians on TutorFinder BD."
+  profile={profile}
+>
+  <section class="container-page py-12">
+    <h1 class="text-3xl font-bold text-slate-900">Terms of Service</h1>
+    <div class="prose mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-slate-600">
+      <p><strong>1. Free service.</strong> TutorFinder BD is free for all users. We reserve the right to change or remove features in the future; any fee charge will be announced with prior notice.</p>
+      <p><strong>2. Accounts.</strong> You must provide accurate information. One account per person. You are responsible for your password and activity under your account.</p>
+      <p><strong>3. Tutors.</strong> You list yourself accurately. Misrepresentation (false qualifications, fake experience, photos of others) leads to immediate suspension. You negotiate fees and schedules directly with guardians; we are not a party to your arrangement.</p>
+      <p><strong>4. Guardians.</strong> Contact requests are non-binding. A review may only be left for a lesson that actually took place. Fake, abusive or retaliatory reviews are removed and may lead to account suspension.</p>
+      <p><strong>5. Conduct.</strong> No spam, harassment, threats, discrimination, illegal tutoring, or attempts to circumvent moderation. Behaviour violating these terms is grounds for removal.</p>
+      <p><strong>6. Liability.</strong> We provide a matching directory and verification where marked, but we do not guarantee a tutor's suitability. Always check references and meet safely (public place for first meeting recommended).</p>
+      <p><strong>7. Suspension.</strong> We may suspend accounts that violate these terms, at our sole discretion.</p>
+      <p class="text-xs text-slate-400">Last updated: 21 September 2026.</p>
+    </div>
+  </section>
+</Base>

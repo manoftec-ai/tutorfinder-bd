@@ -1,0 +1,151 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies, T } from "../../lib/supabase";
+import { hasSupabase } from "../../lib/env";
+import { requireProfile, type EngagementRow } from "../../lib/db";
+import { formatDate, photoUrl } from "../../lib/directory";
+
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb, "tutor");
+if (!profile) return Astro.redirect("/login/");
+
+let mine = null;
+let engagements: EngagementRow[] = [];
+let guardianNames: Record<string, string> = {};
+
+if (hasSupabase) {
+  const [p, e] = await Promise.all([
+    sb.from(T.tutorProfiles).select("*").eq("id", profile.id).maybeSingle(),
+    sb.from(T.engagements).select("*").eq("tutor_id", profile.id).order("created_at", { ascending: false }),
+  ]);
+  mine = p.data ? (p.data as any) : null;
+  engagements = (e.data as EngagementRow[]) ?? [];
+  const gids = [...new Set(engagements.map((x) => x.guardian_id))];
+  if (gids.length) {
+    const { data: names } = await sb.from(T.profilesPublic).select("id, name").in("id", gids);
+    for (const n of names ?? []) guardianNames[n.id] = n.name;
+  }
+}
+
+const STATUS: Record<EngagementRow["status"], { label: string; cls: string }> = {
+  requested: { label: "New request", cls: "bg-amber-100 text-amber-800" },
+  contact_exchanged: { label: "Contact exchanged", cls: "bg-sky-100 text-sky-800" },
+  started: { label: "In progress", cls: "bg-emerald-100 text-emerald-800" },
+  completed: { label: "Completed", cls: "bg-slate-200 text-slate-700" },
+  cancelled: { label: "Cancelled", cls: "bg-red-100 text-red-700" },
+};
+const photo = mine ? photoUrl(mine.photo_url) : "";
+const profileStatus = mine
+  ? mine.status === "active"
+    ? { label: "Live in the directory", cls: "text-emerald-700 bg-emerald-50" }
+    : mine.status === "suspended"
+      ? { label: "Suspended", cls: "text-red-700 bg-red-50" }
+      : { label: "Pending admin approval", cls: "text-amber-700 bg-amber-50" }
+  : null;
+const input =
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800";
+---
+
+<Base
+  title="Tutor dashboard — TutorFinder BD"
+  description="Manage your tutor profile and tutoring requests."
+  profile={profile}
+>
+  <section class="container-page py-10">
+    <h1 class="text-2xl font-bold text-slate-900">Tutor dashboard</h1>
+
+    <!-- Profile status card -->
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center gap-4">
+        {photo ? (
+          <img src={photo} alt="profile" class="h-14 w-14 rounded-xl object-cover" />
+        ) : (
+          <span class="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-100 text-lg font-bold text-emerald-800">{profile.name.slice(0, 1)}</span>
+        )}
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-900">{profile.name}</span>
+            {profileStatus && (
+              <span class={`rounded-full px-2 py-0.5 text-xs font-medium ${profileStatus.cls}`}>{profileStatus.label}</span>
+            )}
+          </div>
+          <p class="text-sm text-slate-500">{mine ? mine.headline || "No headline yet" : "Complete your profile to get listed"}</p>
+        </div>
+      </div>
+      <a href="/tutor/edit/" class="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">
+        {mine ? "Edit profile" : "Create profile"}
+      </a>
+    </div>
+
+    {mine && mine.status === "active" && (
+      <p class="mt-3 text-sm text-slate-500">
+        Public profile:{" "}
+        <a href={`/tutor/${mine.slug}/`} class="text-emerald-700 hover:underline">/tutor/{mine.slug}/</a>
+      </p>
+    )}
+
+    <h2 class="mt-10 text-lg font-semibold text-slate-900">Tutoring requests</h2>
+    <p class="mb-4 text-xs text-slate-400">
+      Guardians send these contact requests. Move a request forward as you get in touch and start lessons.
+    </p>
+
+    {hasSupabase && engagements.length === 0 && (
+      <div class="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+        No tutoring requests yet. {mine && mine.status === "active"
+          ? <>Your profile is live — requests will appear here.</>
+          : <>Once your profile is approved, guardians can find and request you.</>}
+      </div>
+    )}
+
+    <div class="space-y-4">
+      {engagements.map((e) => {
+        const st = STATUS[e.status] ?? STATUS.requested;
+        return (
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="font-semibold text-slate-900">
+                  {guardianNames[e.guardian_id] ? `${guardianNames[e.guardian_id].split(" ")[0]} (guardian)` : "Guardian"}
+                </span>
+                <span class={`ml-2 rounded-full px-2 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
+              </div>
+              <span class="text-xs text-slate-400">Received {formatDate(e.created_at)}</span>
+            </div>
+            <div class="mt-3 grid gap-x-6 gap-y-1 text-sm text-slate-600 sm:grid-cols-2">
+              {e.subject_note && <span><strong class="text-slate-700">Needs:</strong> {e.subject_note}</span>}
+              {e.level_note && <span><strong class="text-slate-700">Class:</strong> {e.level_note}</span>}
+              {e.guardian_notes && <span class="sm:col-span-2"><strong class="text-slate-700">Guardian's message:</strong> {e.guardian_notes}</span>}
+            </div>
+            {(e.status === "requested" || e.status === "contact_exchanged" || e.status === "started") && (
+              <div class="mt-4 flex flex-wrap gap-2">
+                {[
+                  ["contact_exchanged", "Contact exchanged"],
+                  ["started", "Lessons started"],
+                  ["completed", "Completed"],
+                ].map(([val, label]) => (
+                  <form method="post" action="/api/tutor/engagement-status/">
+                    <input type="hidden" name="engagementId" value={e.id} />
+                    <input type="hidden" name="status" value={val} />
+                    <button class={`rounded-lg border px-3 py-1.5 text-xs font-medium ${e.status === val ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
+                      {label}
+                    </button>
+                  </form>
+                ))}
+                <form method="post" action="/api/tutor/engagement-status/">
+                  <input type="hidden" name="engagementId" value={e.id} />
+                  <input type="hidden" name="status" value="cancelled" />
+                  <button class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">Decline</button>
+                </form>
+              </div>
+            )}
+            {e.status === "completed" && (
+              <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                Completed — this guardian can now leave you a verified review.
+              </p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </section>
+</Base>

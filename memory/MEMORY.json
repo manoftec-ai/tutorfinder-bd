@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "scope": "project",
+    "name": "TutorFinder BD",
+    "memorySystemVersion": "1.0",
+    "lastUpdated": "2026-09-21",
+    "sessionsCount": 1,
+    "repo": "manoftec-ai/tutorfinder-bd",
+    "hosting": "Vercel Hobby",
+    "stack": "Astro 7 + Tailwind 4 + MDX (static, builds on Vercel)"
+  },
+  "purpose": "FREE DocTime-style review directory for Bangladesh tutoring, Dhaka-first: tutors enlist free (profiles by subject/level/area/mode/fee), students/guardians search & filter to find their perfect match, real user reviews gated by actual engagement, admin verification/moderation. SEO = acquisition channel. Monetization later & optional (featured/verified/match-service) — directory stays free.",
+  "blueprint": {
+    "file": "docs/BLUEPRINT.md",
+    "version": "2.0",
+    "date": "2026-09-21",
+    "model": "DocTime-style: free verified reviewable directory (doctors -> tutors)",
+    "authoredBecause": "user: build something like DocTime where users give reviews, complete free directory, easy for teachers to enlist, students find perfect match by location/subject; make a real architecture and blueprint first"
+  },
+  "verdict": {
+    "summary": "CONDITIONAL GO. The demand side is excellent (92% tutoring prevalence, ~38-40M students, <1% served by leader); the trust gap in the informal 'tuition media' layer is the real opportunity. Generic Caretutors clone = NO-GO (13-yr dominant leader). Win via underserved niches + SEO at zero budget.",
+    "evidenceFile": "docs/RESEARCH.md"
+  },
+  "goals": {
+    "active": [
+      { "id": "G2", "goal": "Build TutorFinder BD site (SEO content + directory first)", "priority": "high", "status": "active" },
+      { "id": "G3", "goal": "Monetize later (featured listings / lead-gen / then commission matching)", "priority": "medium", "status": "active" }
+    ],
+    "completed": [
+      { "id": "G1", "goal": "Validate the BD/Dhaka tutor-finder opportunity", "date": "2026-09-21" }
+    ]
+  },
+  "decisions": [
+    {
+      "date": "2026-09-21",
+      "decision": "Stack = Astro SSR on Vercel + Supabase free (Postgres/Auth/Storage/RLS)",
+      "rationale": "User picked recommended A/B; zero ops, portable Postgres schema"
+    },
+    {
+      "date": "2026-09-21",
+      "decision": "MVP scope = FULL: tutor enlist+profile+admin approve+public search directory+contact flow+engagement-gated reviews",
+      "rationale": "User picked recommended A/B; trust loop from day one"
+    },
+    {
+      "date": "2026-09-21",
+      "decision": "PIVOT (v2): DocTime-style FREE review directory — tutors enlist free; search by area/subject/level; engagement-gated user reviews; admin verify/moderation; free directory permanent, SEO = acquisition channel",
+      "rationale": "User wants DocTime model for tutors (reviews + free directory + easy enlistment + perfect-match search); blueprint-first request; docs/BLUEPRINT.md authoritative",
+      "supersedes": "v1 SEO-content-first-as-product"
+    },
+    {
+      "date": "2026-09-21",
+      "decision": "Niche wedge = SEO content + directory FIRST (not a Caretutors clone)",
+      "rationale": "Market excellent but cannot out-scale Caretutors; win via underserved niches + organic search at zero budget",
+      "chosenIn": "user question, 2026-09-21"
+    },
+    {
+      "date": "2026-09-21",
+      "decision": "Stack = Astro 7 + Tailwind 4 + MDX on Vercel Hobby, mirroring newsdesk-bd conventions",
+      "rationale": "Proven free stack; local Termux build impossible; Vercel builds"
+    },
+    {
+      "date": "2026-09-21",
+      "decision": "Working brand 'TutorFinder BD'; repo manoftec-ai/tutorfinder-bd",
+      "rationale": "User's own framing 'Tutor Finder'; name/domain adjustable"
+    }
+  ],
+  "preferencesAndConstraints": {
+    "budget": "ZERO/VERY LOW; free tools only",
+    "seoFirst": true,
+    "noFabrication": "Tutor/area/fee figures must be sourced or flagged as placeholders",
+    "gitRule": "commit + push after any modification (global standing rule 5.6)",
+    "language": "English to user in Termux (D46); Bengali OK in published content"
+  },
+  "workInProgress": {
+    "scaffolded": "2026-09-21: AGENTS.md, memory/, docs/RESEARCH.md, docs/PRODUCT_PLAN.md, docs/BLUEPRINT.md (v2 authoritative), initial Astro skeleton only",
+    "blueprintOpenQuestions": "see BLUEPRINT.md 15 (stack, auth, MVP scope, brand/domain, seed policy)"
+  },
+  "nextSteps": [
+    "Confirm BLUEPRINT 15 open questions (stack, auth, MVP scope, brand/domain, seed policy)",
+    "M0: Supabase project + migrations + auth skeleton + repo cleanup",
+    "M1: tutor registration + profile + admin approve + public directory search/filter + profile pages; seed 20-50 tutors manually",
+    "M2: guardian contact-request flow + engagement + gated reviews + moderation",
+    "Domain: tutorfinderbd.com / dhakatutor.com"
+  ],
+  "archived": []
+}

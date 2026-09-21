@@ -1,0 +1,176 @@
+---
+import Base from "../layouts/Base.astro";
+import { supabaseFromCookies, T } from "../lib/supabase";
+import { hasSupabase } from "../lib/env";
+import { requireProfile, type Area, type Level, type Subject } from "../lib/db";
+import { formatDate } from "../lib/directory";
+
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb, "tutor");
+if (!profile) return Astro.redirect("/login/");
+
+let mine: any = null;
+let areas: Area[] = [];
+let subjects: Subject[] = [];
+let levels: Level[] = [];
+let sel = { subjects: [] as number[], areas: [] as number[], levels: [] as number[] };
+
+if (hasSupabase) {
+  const [p, a, s, l] = await Promise.all([
+    sb.from(T.tutorProfiles).select("*").eq("id", profile.id).maybeSingle(),
+    sb.from(T.areas).select("id, slug, name").order("name"),
+    sb.from(T.subjects).select("id, slug, name, category").order("name"),
+    sb.from(T.levels).select("id, code, label").order("id"),
+  ]);
+  mine = p.data ?? null;
+  areas = (a.data as Area[]) ?? [];
+  subjects = (s.data as Subject[]) ?? [];
+  levels = (l.data as Level[]) ?? [];
+  if (mine) {
+    const [ss, aa, ll] = await Promise.all([
+      sb.from(T.tutorSubjects).select("subject_id").eq("tutor_id", profile.id),
+      sb.from(T.tutorAreas).select("area_id").eq("tutor_id", profile.id),
+      sb.from(T.tutorLevels).select("level_id").eq("tutor_id", profile.id),
+    ]);
+    sel.subjects = (ss.data ?? []).map((r: any) => r.subject_id);
+    sel.areas = (aa.data ?? []).map((r: any) => r.area_id);
+    sel.levels = (ll.data ?? []).map((r: any) => r.level_id);
+  }
+}
+
+const input =
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none w-full";
+const label = "mb-1 block text-sm font-medium text-slate-700";
+---
+
+<Base
+  title={mine ? "Edit tutor profile — TutorFinder BD" : "Create tutor profile — TutorFinder BD"}
+  description="List your tutor profile free on TutorFinder BD."
+  profile={profile}
+>
+  <section class="container-page py-10">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-2xl font-bold text-slate-900">{mine ? "Edit your public profile" : "Create your public profile"}</h1>
+      <p class="mt-2 text-sm text-slate-500">
+        This is what guardians will see after approval. Keep it accurate and specific —
+        accuracy is what makes the directory trustworthy.
+      </p>
+
+      {mine && (
+        <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+          Status: {mine.status} {mine.verification_status !== "verified" && "· verification: " + mine.verification_status}
+        </p>
+      )}
+
+      <form method="post" action="/api/tutor/save-profile/" enctype="multipart/form-data" class="mt-8 space-y-6">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class={label} for="headline">Headline</label>
+            <input id="headline" name="headline" type="text" value={mine?.headline ?? ""} class={input} placeholder="e.g. Experienced Physics tutor for HSC & O-Level" />
+          </div>
+          <div>
+            <label class={label} for="institution">Institution</label>
+            <input id="institution" name="institution" type="text" value={mine?.institution ?? ""} class={input} placeholder="e.g. DU, BUET, Medical College…" />
+          </div>
+          <div>
+            <label class={label} for="qualification">Qualification</label>
+            <input id="qualification" name="qualification" type="text" value={mine?.qualification ?? ""} class={input} placeholder="e.g. B.Sc. in CSE, 3rd year" />
+          </div>
+          <div>
+            <label class={label} for="experience_months">Teaching experience (months)</label>
+            <input id="experience_months" name="experience_months" type="number" min={0} max={600} value={mine?.experience_months ?? 0} class={input} />
+          </div>
+          <div>
+            <label class={label} for="fee_min">Monthly fee range — min (BDT)</label>
+            <input id="fee_min" name="fee_min" type="number" min={0} value={mine?.fee_min ?? 0} class={input} placeholder="e.g. 3000" />
+          </div>
+          <div>
+            <label class={label} for="fee_max">Monthly fee range — max (BDT)</label>
+            <input id="fee_max" name="fee_max" type="number" min={0} value={mine?.fee_max ?? 0} class={input} placeholder="e.g. 6000" />
+          </div>
+        </div>
+
+        <div>
+          <label class={label}>Teaching modes</label>
+          <div class="flex flex-wrap gap-4">
+            {[
+              ["home", "Home tutoring"],
+              ["online", "Online"],
+              ["group", "Group"],
+            ].map(([val, lbl]) => (
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="modes" value={val} checked={mine ? (mine.modes ?? []).includes(val) : false} class="rounded border-slate-300 text-emerald-600" />
+                {lbl}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label class={label}>Subjects you teach</label>
+          <div class="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-3">
+            {subjects.map((s) => (
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="subjectIds" value={s.id} checked={sel.subjects.includes(s.id)} class="rounded border-slate-300 text-emerald-600" />
+                {s.name}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label class={label}>Classes / levels</label>
+          <div class="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-3">
+            {levels.map((l) => (
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="levelIds" value={l.id} checked={sel.levels.includes(l.id)} class="rounded border-slate-300 text-emerald-600" />
+                {l.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label class={label}>Areas you visit (home tutoring)</label>
+          <div class="grid max-h-48 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-3 sm:grid-cols-3">
+            {areas.map((a) => (
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="areaIds" value={a.id} checked={sel.areas.includes(a.id)} class="rounded border-slate-300 text-emerald-600" />
+                {a.name}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label class={label} for="gender">Gender</label>
+          <select id="gender" name="gender" class={input}>
+            <option value="">Prefer not to say</option>
+            {[
+              ["male", "Male"],
+              ["female", "Female"],
+              ["other", "Other"],
+            ].map(([v, lbl]) => <option value={v} selected={mine?.gender === v}>{lbl}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label class={label} for="bio">Bio</label>
+          <textarea id="bio" name="bio" rows={5} class={input} placeholder="Tell guardians about your teaching style, results, and availability…">{mine?.bio ?? ""}</textarea>
+        </div>
+
+        <div>
+          <label class={label} for="photo">Profile photo</label>
+          <input id="photo" name="photo" type="file" accept="image/*" class={input} />
+          {mine?.photo_url && <p class="mt-1 text-xs text-slate-400">Current photo will be replaced if you upload a new one.</p>}
+        </div>
+
+        <button type="submit" class="rounded-lg bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">
+          {mine ? "Save changes" : "Submit for approval"}
+        </button>
+        {mine && <p class="text-xs text-slate-400">Last updated: {formatDate(mine.updated_at)}</p>}
+        <input type="hidden" name="existingSlug" value={mine?.slug ?? ""} />
+      </form>
+    </div>
+  </section>
+</Base>

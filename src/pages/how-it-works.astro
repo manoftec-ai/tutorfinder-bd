@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { requireProfile } from "../../lib/db";
+
+const profile = await requireProfile(supabaseFromCookies(Astro.cookies));
+---
+
+<Base
+  title="How it works — TutorFinder BD"
+  description="How tutors list for free and guardians find the perfect match on TutorFinder BD. Real reviews only."
+  profile={profile}
+>
+  <section class="container-page py-12">
+    <h1 class="text-3xl font-bold text-slate-900">How TutorFinder BD works</h1>
+    <div class="mt-8 space-y-8">
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 class="font-semibold text-slate-900">1. For tutors — list for free</h2>
+        <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Create an account as a tutor and fill a profile: subjects, areas, classes, fee and a short bio.</li>
+          <li>Your profile shows publicly after quick admin approval (usually within a day).</li>
+          <li>Get the green "Verified" badge by completing verification.</li>
+          <li>No listing fee, no placement commission — ever. You keep your full fee.</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 class="font-semibold text-slate-900">2. For guardians — find the perfect match</h2>
+        <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Search by area, subject, class, teaching mode and minimum rating.</li>
+          <li>Compare profiles: institution, experience, fee, and ratings from real lessons.</li>
+          <li>Send a free contact request to the tutor you like. The tutor replies in their dashboard.</li>
+          <li>You negotiate fee, schedule and mode directly with the tutor.</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 class="font-semibold text-slate-900">3. Reviews — verified and moderated</h2>
+        <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Only a guardian whose lesson actually happened (engagement marked completed) can review.</li>
+          <li>Reviews are manually moderated before going live — abuse and fake ratings are removed.</li>
+          <li>Every rating on a profile is therefore tied to a real, logged engagement.</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+        <h2 class="font-semibold text-emerald-900">Our promise</h2>
+        <p class="mt-2 text-sm text-emerald-900">
+          We never charge tutors or guardians, never take a cut of fees, and never sell your
+          contact info. We keep the directory honest because honest reviews are what make
+          finding a good tutor trustworthy in the first place.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

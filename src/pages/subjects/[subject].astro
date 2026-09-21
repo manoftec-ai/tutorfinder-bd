@@ -1,0 +1,57 @@
+---
+import Base from "../../layouts/Base.astro";
+import TutorCard from "../../components/TutorCard.astro";
+import { supabaseFromCookies } from "../../lib/supabase";
+import { hasSupabase } from "../../lib/env";
+import { listTutors, requireProfile, type Subject, type TutorWithRelations } from "../../lib/db";
+
+const { subject } = Astro.params;
+const sb = supabaseFromCookies(Astro.cookies);
+const profile = await requireProfile(sb);
+
+let subjectObj: Subject | null = null;
+let tutors: TutorWithRelations[] = [];
+
+if (hasSupabase && subject) {
+  const [s, res] = await Promise.all([
+    sb.from("subjects").select("id, slug, name, bengali_name, category").eq("slug", String(subject)).maybeSingle(),
+    listTutors(sb, { subject: String(subject), perPage: 24 }),
+  ]);
+  subjectObj = (s.data as Subject | null) ?? null;
+  tutors = res.tutors;
+}
+
+if (!subjectObj) {
+  Astro.response.status = 404;
+}
+---
+
+<Base
+  title={subjectObj ? `${subjectObj.name} tutors — home & online | TutorFinder BD` : "Subject not found | TutorFinder BD"}
+  description={subjectObj ? `Find and compare ${subjectObj.name} tutors in Dhaka by area, class and rating. Free, no commission.` : ""}
+  profile={profile}
+>
+  <section class="container-page py-10">
+    {!subjectObj ? (
+      <p class="text-center text-slate-500">Subject not found. <a href="/subjects/" class="text-emerald-700 hover:underline">Browse all subjects</a></p>
+    ) : (
+      <>
+        <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">{subjectObj.name} tutors</h1>
+        <p class="mt-2 text-sm text-slate-500">
+          {subjectObj.bengali_name && `${subjectObj.bengali_name} · `}
+          <a href={`/search/?subject=${subjectObj.slug}`} class="text-emerald-700 hover:underline">refine by area & class</a>
+        </p>
+        {tutors.length > 0 ? (
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tutors.map((t) => <TutorCard tutor={t} />)}
+          </div>
+        ) : (
+          <div class="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
+            No active tutors listed for {subjectObj.name} yet.{" "}
+            <a href="/join/" class="text-emerald-700 hover:underline">Tutor? List here free.</a>
+          </div>
+        )}
+      </>
+    )}
+  </section>
+</Base>
