@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
-import { supabaseFromCookies } from "../../lib/supabase";
-import { requireProfile } from "../../lib/db";
+import { supabaseFromCookies } from "../lib/supabase";
+import { requireProfile } from "../lib/db";
 
 const profile = await requireProfile(supabaseFromCookies(Astro.cookies));
 ---
