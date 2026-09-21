@@ -1,9 +1,9 @@
 ---
-import Base from "../layouts/Base.astro";
-import { supabaseFromCookies, T } from "../lib/supabase";
-import { hasSupabase } from "../lib/env";
-import { requireProfile, type Area, type Level, type Subject } from "../lib/db";
-import { formatDate } from "../lib/directory";
+import Base from "../../layouts/Base.astro";
+import { supabaseFromCookies, T } from "../../lib/supabase";
+import { hasSupabase } from "../../lib/env";
+import { requireProfile, type Area, type Level, type Subject } from "../../lib/db";
+import { formatDate } from "../../lib/directory";
 
 const sb = supabaseFromCookies(Astro.cookies);
 const profile = await requireProfile(sb, "tutor");

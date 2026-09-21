@@ -1,9 +1,9 @@
 ---
-import Base from "../layouts/Base.astro";
-import { adminClient, supabaseFromCookies } from "../lib/supabase";
-import { SUPABASE_SERVICE_ROLE_KEY, hasSupabase } from "../lib/env";
-import { requireProfile } from "../lib/db";
-import { formatDate } from "../lib/directory";
+import Base from "../../layouts/Base.astro";
+import { adminClient, supabaseFromCookies } from "../../lib/supabase";
+import { SUPABASE_SERVICE_ROLE_KEY, hasSupabase } from "../../lib/env";
+import { requireProfile } from "../../lib/db";
+import { formatDate } from "../../lib/directory";
 
 const profile = await requireProfile(supabaseFromCookies(Astro.cookies), "admin");
 if (!profile) return Astro.redirect("/login/");
